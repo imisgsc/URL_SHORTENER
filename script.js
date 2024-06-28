@@ -1,41 +1,44 @@
 const urlForm = document.getElementById('urlForm');
   const imgBox = document.getElementById('imgBox');
 
-  urlForm.addEventListener('submit', async function(event) {
+  urlForm.addEventListener('submit', function(event) {
     event.preventDefault();
-    const formData = new FormData(urlForm);
-    const originalUrl = formData.get('originalUrl');
+    const originalUrl = urlForm.elements['originalUrl'].value.trim();
 
-    try {
-      const response = await fetch('https://api.shorturl.com/shorten', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ url: originalUrl })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to shorten URL');
-      }
-
-      const data = await response.json();
-      const shortUrl = data.shortUrl;
-
-      imgBox.innerHTML = `
-        <div class="show-img">
-          <p>Your shortened URL:</p>
-          <input type="text" value="${shortUrl}" readonly>
-          <button onclick="copyToClipboard('${shortUrl}')">Copy</button>
-        </div>
-      `;
-      imgBox.classList.add('show-img');
-    } catch (error) {
-      console.error('Error:', error);
-      imgBox.innerHTML = '<p class="error">Failed to shorten URL. Please try again.</p>';
-      imgBox.classList.add('show-img', 'error');
+    if (originalUrl === '') {
+      showError('Please enter a URL.');
+      return;
     }
+
+    // Simulate a shortened URL (replace this with actual API call in real scenario)
+    const shortUrl = generateShortUrl(originalUrl);
+
+    showShortenedUrl(shortUrl, originalUrl);
   });
+
+  function generateShortUrl(originalUrl) {
+    // In real scenario, you would send a request to a URL shortening API
+    // and get back a short URL. For now, let's simulate it.
+    const hash = Math.random().toString(36).substr(2, 7);
+    return `https://short.url/${hash}`;
+  }
+
+  function showShortenedUrl(shortUrl, originalUrl) {
+    imgBox.innerHTML = `
+      <div class="show-img">
+        <p>Your shortened URL:</p>
+        <input type="text" id="shortUrlInput" value="${shortUrl}" readonly>
+        <button onclick="copyToClipboard('${shortUrl}')">Copy</button>
+      </div>
+    `;
+    imgBox.classList.add('show-img');
+
+    // Redirect functionality (simulated)
+    const shortUrlInput = document.getElementById('shortUrlInput');
+    shortUrlInput.addEventListener('click', function() {
+      window.location.href = originalUrl;
+    });
+  }
 
   function copyToClipboard(text) {
     const textarea = document.createElement('textarea');
@@ -48,4 +51,9 @@ const urlForm = document.getElementById('urlForm');
     document.execCommand('copy');
     document.body.removeChild(textarea);
     alert('Copied to clipboard');
+  }
+
+  function showError(message) {
+    imgBox.innerHTML = `<p class="error">${message}</p>`;
+    imgBox.classList.add('show-img', 'error');
   }
